@@ -20,6 +20,7 @@ _desc         = "Multi-token discord bot control panel and manager"
 - ONLY ADD DYNAMIC BOT ADDING IN QT DESIGNER VERSION, THIS IS JUST FOR PRODUCTION PURPOSES
 """
 
+# i am here -martin
 
 class DiscordBot():
 	def __init__(self, display_name:str, online:bool, key:str, debug:bool, show_token:bool, start_file_dir:str):
