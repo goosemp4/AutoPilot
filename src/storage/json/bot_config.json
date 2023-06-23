@@ -1,11 +1,11 @@
 [
     {
         "display_name": "Praetor",
-        "online": 0,
+        "online": 1,
         "key": "praetor",
         "debug": 0,
         "token": null,
-        "show_token": 1,
-        "start_file_dir":"AutoPilot/aupi_bots/praetor/main.py"
+        "show_token": 0,
+        "start_file_dir": "AutoPilot/aupi_bots/praetor/main.py"
     }
 ]

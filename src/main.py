@@ -6,7 +6,8 @@ from os.path import exists
 from datetime import datetime
 
 _program_name = "AutoPilot"
-_author       = "goose.mp4"
+_verison 	  = "alpha v1.0.0"
+_author       = "goose.mp4 & martin"
 _desc         = "Multi-token discord bot control panel and manager"
 
 
@@ -15,6 +16,8 @@ TODO:
 
 -  : incomplete or to be added
 i- : currently being worked on by 'i' (initial)
+
+
 
 - Add logging
 
@@ -44,7 +47,7 @@ def get_json(json_file_name:str):
 
 def set_json(json_file_name, new_json):
 	"""Sets a specified JSON file to be different dictionary"""
-	with open(f"AutoPilotsrc/storage/json/{json_file_name}.json", "w") as json_file:
+	with open(f"src/storage/json/{json_file_name}.json", "w") as json_file:
 		try:
 			dump(new_json, json_file, indent=4)
 			return
@@ -60,53 +63,74 @@ def set_bot_online():
 
 def aupi_process_command(console_command:str):
 	"""Processes commands from the AutoPilot console control panel"""
-	system('cls') # clear the console!!!
 
 	# Process command
 	console_command = console_command.lower().split()
 	all_bot_configs = get_json("bot_config")
 
-	# Have preset list of valid keys
-	all_command_keys = [
-		"set",    # Sets the value of an attribute for a bot
-		"copy",   # Copies the value of an attribute for a bot
-		"toggle", # Toggles a bot on or off
+
+	# Attributes that are toggled on/off
+	toggle_attributes = [
+		"online",
+		"debug",
+		"show_token"
 	]
 
-	# Attempt to get each required segment
+	# Attributes that take in values
+	value_attributes = [
+		"display_name",
+		"key",
+		"token",
+		"start_file_dir"
+	]
+
+
+	# Get each required segment
 	try:
 		cmd_key 	  = console_command[0] # Which command the user is trying to use
-		bot_key 	  = console_command[1] # The index of where the bot is on the list
-		bot_attribute = console_command[2] # The attribute in which the user is changing
-		bot_value 	  = console_command[3] # The new value the selected attribute is being changed to
-
+		target 	  = console_command[1] # The target in which you want to change
+		attribute = console_command[2] # The attribute in which the user is changing
+		value 	  = console_command[3] # The new value the selected attribute is being changed to
 	except IndexError as e:
 		# re-word all of this better, im really high when writing this
 		# All 4 parts should be present so in the case any are missing via IndexError you know the user is a moron
 		return ValueError(f"Insufficient amount of commands passed through! Error: {e}") 
 
 
-	# Determine what bot to get off the list
+	# Check if command input by user was for a bot
+	bot_command = False
 	for bot_index in range(len(all_bot_configs)):
-		if bot_index == cmd_key:
-			requested_bot = all_bot_configs[bot_index]
+		if all_bot_configs[bot_index]["key"] == target:
+			requested_bot = all_bot_configs[bot_index] # Dict containing requested bot's info 8-)
+			bot_command = True
+
+	# Check if value is supposed to be an int
+	if bot_command and attribute in toggle_attributes:
+		if value.isdigit():
+			value = int(value)
+		else:
+			return ValueError(f"[!] The input value '{value}' for attribute '{attribute}' is not valid.\nOnly accepts '1' and '0' (on/off)")
+
+	# Output the requested command from the user
+	if cmd_key == "set":
+		if bot_command:
+			requested_bot[attribute] = value 		   # Assign new value
+			all_bot_configs[bot_index] = requested_bot # Replace info
+			set_json("bot_config", all_bot_configs)    # Set new info for JSON file
+	
 
 
-	if cmd_key == "online":
-		pass
-					
-	set_json("bot_config", all_bot_configs)
-	return
+
 
 
 
 def aupi_main():
 	"""Start the AutoPilot console control panel"""
 
-	bot_list = get_json("bot_config")
-
 	while True:
-		console_display = f"# {_program_name} | by {_author} #\n\n"
+		system('cls') # clear the console!!!
+		bot_list = get_json("bot_config")
+		console_display = f"# {_program_name} @ {_verison} -- created by {_author}\n\n"
 
 		# Load each bot's indvidual information for the console display
 		display_number = 0
@@ -119,15 +143,22 @@ def aupi_main():
 			debug        = bot["debug"]
 			show_token 	 = bot["show_token"]
 			token 		 = bot["token"] if show_token else "N/A"
-			online_display = "online" if online else "offline"
+			online_display = "online" if online == 1 else "offline"
 			
+			# Check for debugging events
+			if debug:
+				# Log all of the information given from the JSON here
+				if online:
+					# Put in log that code is attempting to set bot online
+					set_bot_online(key)
+
 			# Add bot info to the console display
 			console_display += "############################################################\n"
-			console_display += f"[ {display_number} ]  {display_name} | {online_display}\n"
-			console_display += f"token:  {token}\n"
-			console_display += f"key:    {key}\n"
-			console_display += f"debug:  {debug}\n"
-			console_display += f"show_token: {show_token}\n"
+			console_display += f"[ {display_name} | 🔑 : {key} ]\n\n"
+			console_display += f"status     : {online_display}\n"
+			console_display += f"token      : {token}\n"
+			console_display += f"debug      : {debug}\n"
+			console_display += f"show_token : {show_token}\n"
 			console_display += "############################################################\n\n\n"
 
 			display_number += 1
